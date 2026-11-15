@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<!--
+  陇原红色印记 · 青春赓续血脉 —— 单页静态原型
+  正式提交时的目录建议（层级不超过 3 层，本地引用一律相对路径）：
+    index.html          本文件
+    css/style.css       将下方内联样式整体移出，页面以相对路径引入
+    js/main.js          将下方内联脚本整体移出，页面以相对路径引入
+    images/             人物历史照片、红色足迹历史配图等本地素材，页面以相对路径引用
+    video/intro.mp4     开屏短片：1280×720 / 16:9 / 24fps / 约 10.04 秒 / H.264(avc1)+yuv420p MP4 / 约 1.45 MB / 无音轨
+    images/intro-poster.jpg  开屏首帧静帧海报，视频加载期间与竖屏留白处作底
+    images/red-gene.png      首屏「红色基因」图文板块配图（红旗·金星·华表；白底统一为纯白，配合 multiply 融入米白卡面）
+  开屏素材规格：分辨率 1280×720（16:9，不超过 720p）；时长 8～12 秒；封装 MP4，视频编码 H.264 High@3.1、
+    像素格式 yuv420p、moov 前置（faststart）；单文件不超过 2 MB；原始素材含 AAC 音轨，转码时已去除，
+    页面仍保留 muted 属性，全程静音、不产生音频播放。
+  播放逻辑：静音自动播放、仅播放一次不循环、播完自动淡出进入主页；支持「跳过开屏」按钮、点击画面、
+    Esc/Enter/空格跳过；解码失败或 3 秒未就绪自动跳过；系统开启「减少动效」时直接跳过开屏。
+  适配场景：桌面与手机横竖屏（object-fit:contain 保证画面文字不被裁切）、Edge 90+ 等 Chromium 内核浏览器、
+    本地 file:// 离线打开与校内机房/评审环境、无外网且零外部资源依赖。
+  本页无任何外部字体、图标、脚本与网络请求；图片与短片均为 images/、video/ 下的本地相对路径素材。
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="陇原红色印记·青春赓续血脉，甘肃农业大学第五届红色网页设计大赛参赛作品，以甘肃红色资源为主线的红色文化学习单页。">
+<title>陇原红色印记 · 青春赓续血脉</title>
+<!-- ===== 样式区：正式提交时可拆分为 css/style.css ===== -->
+<style>
+:root{
+  --red:#C8102E;
+  --red-2:#B91C1C;
+  --red-deep:#8E1020;
+  --red-soft:#F7E9EA;
+  --gold:#D4A017;
+  --gold-2:#E7C66B;
+  --gold-soft:#F8EFD9;
+  --cream:#FBF7F0;
+  --paper:#FFFDF9;
+  --line:#E9E0D3;
+  --ink:#2C2723;
+  --gray:#6E655C;
+  --gray-2:#9A8F83;
+  --shadow:0 6px 20px rgba(124,52,44,.07);
+  --shadow-h:0 12px 30px rgba(124,52,44,.13);
+  --brick:#A24A40;
+  --brick-deep:#7C332B;
+  --brick-line:rgba(162,74,64,.22);
+  --nav-h:72px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  color:var(--ink);
+  font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Source Han Sans SC","Noto Sans CJK SC","WenQuanYi Micro Hei",sans-serif;
+  font-size:16px;
+  line-height:1.78;
+  background-color:var(--cream);
+  background-image:
+    radial-gradient(circle at 8% 6%,rgba(200,16,46,.045),transparent 28%),
+    radial-gradient(circle at 94% 20%,rgba(212,160,23,.06),transparent 26%),
+    radial-gradient(circle at 50% 96%,rgba(200,16,46,.035),transparent 34%),
+    linear-gradient(180deg,#FFFDF9 0%,#FBF7F0 100%);
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,p,ul,ol,figure,fieldset{margin:0}
+ul,ol{padding:0;list-style:none}
+a{color:inherit;text-decoration:none}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a:focus,button:focus,input:focus,textarea:focus,[tabindex]:focus{outline:2px solid var(--gold);outline-offset:3px}
+.serif{font-family:"Source Han Serif SC","Noto Serif CJK SC","Songti SC","STSong","SimSun",serif}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.skip{position:absolute;left:-9999px;top:0;z-index:200;background:var(--red);color:#fff;padding:10px 18px;border-radius:0 0 10px 0}
+.skip:focus{left:0}
+
+/* ---------- 顶部固定导航：米白细边框 ---------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:90;background:rgba(255,253,249,.94);border-bottom:1px solid var(--brick-line);box-shadow:none}
+.nav::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:1px;background:linear-gradient(90deg,rgba(212,160,23,0),rgba(212,160,23,.38),rgba(212,160,23,0));pointer-events:none}
+.nav-in{max-width:1180px;margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:11px;flex:0 0 auto}
+.brand-mark{width:36px;height:36px;border-radius:50%;background:transparent;border:1px solid rgba(162,74,64,.42);display:flex;align-items:center;justify-content:center}
+.brand-mark svg{width:18px;height:18px;fill:var(--brick)}
+.brand-txt strong{display:block;font-size:19px;letter-spacing:3px;color:var(--brick-deep);line-height:1.25;font-weight:600}
+.brand-txt small{display:block;font-size:11px;letter-spacing:1.5px;color:var(--gray-2);line-height:1.4}
+.nav-links{display:flex;align-items:center;gap:4px;margin-left:auto;flex-wrap:wrap}
+.nav-links a{position:relative;display:block;padding:7px 13px;font-size:14px;letter-spacing:1px;color:var(--gray);transition:color .2s}
+.nav-links a::after{content:"";position:absolute;left:50%;bottom:2px;width:0;height:1px;background:var(--brick);transform:translateX(-50%);transition:width .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--brick-deep);background:transparent}
+.nav-links a.active::after{width:22px}
+
+/* ---------- 通用版式 ---------- */
+.main{padding-top:var(--nav-h)}
+.section{position:relative;max-width:1180px;margin:0 auto;padding:86px 24px;scroll-margin-top:96px}
+.section::before{content:attr(data-num);position:absolute;right:26px;top:52px;font-family:Georgia,serif;font-size:108px;line-height:1;color:var(--gold);opacity:.10;pointer-events:none}
+.section-head{position:relative;margin-bottom:44px;max-width:760px}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:13px;letter-spacing:3px;color:var(--red);font-weight:600}
+.eyebrow::before{content:"";width:26px;height:2px;background:var(--gold)}
+.section-title{font-size:clamp(27px,3.4vw,38px);line-height:1.35;letter-spacing:4px;color:var(--red-deep);margin:12px 0 12px;font-weight:600}
+.section-title::after{content:"";display:block;width:54px;height:3px;margin-top:14px;background:linear-gradient(90deg,var(--red),var(--gold));border-radius:2px}
+.section-desc{color:var(--gray);font-size:15px;max-width:700px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow-h);border-color:rgba(162,74,64,.34)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:12.5px;background:var(--gold-soft);color:#8A6510;border:1px solid rgba(212,160,23,.32)}
+.badge.red{background:var(--red-soft);color:var(--red-deep);border-color:rgba(200,16,46,.2)}
+.badge svg{width:13px;height:13px;fill:currentColor}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:12px 24px;border-radius:3px;font-size:15px;letter-spacing:1px;font-weight:600;border:1px solid transparent;transition:transform .2s,box-shadow .2s,background-color .2s,color .2s}
+.btn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn-primary{background:linear-gradient(135deg,var(--brick),var(--brick-deep));color:#fff;box-shadow:0 8px 20px rgba(124,51,43,.18)}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 14px 28px rgba(124,51,43,.24)}
+.btn-ghost{background:transparent;color:var(--brick-deep);border-color:var(--brick-line)}
+.btn-ghost:hover{transform:translateY(-3px);background:rgba(162,74,64,.06);border-color:var(--brick)}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .24s ease,transform .24s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* ---------- 首屏：低饱和砖红 × 米白，大留白 ---------- */
+.hero{position:relative;overflow:hidden;padding:96px 0 0;background:linear-gradient(165deg,#FFFDF9 0%,#FBF8F2 58%,#F6EFE6 100%)}
+.hero-bg{position:absolute;top:0;left:0;width:100%;height:100%;opacity:.055;pointer-events:none}
+.hero-grid{position:relative;max-width:1180px;margin:0 auto;padding:0 24px 100px;display:grid;grid-template-columns:1.12fr .88fr;gap:64px;align-items:center}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--brick-line);background:transparent;color:var(--brick-deep);font-size:12.5px;letter-spacing:2px}
+.hero-tag svg{width:14px;height:14px;fill:var(--gold)}
+.hero-title{margin:32px 0 14px;font-size:clamp(36px,5vw,62px);line-height:1.34;letter-spacing:9px;color:var(--brick-deep);font-weight:600}
+.hero-title span{display:block}
+.hero-title .sub{color:var(--ink);font-size:.6em;letter-spacing:12px;margin-top:12px;font-weight:400}
+.hero-theme{display:inline-block;margin:20px 0 20px;padding:4px 0 4px 16px;border-left:1px solid var(--brick);background:transparent;font-size:14.5px;letter-spacing:2.5px;color:var(--brick-deep)}
+.hero-lead{color:var(--gray);font-size:16px;line-height:1.95;max-width:600px}
+.kw-list{display:flex;flex-wrap:wrap;gap:10px;margin:30px 0 38px}
+.kw-list .badge{font-size:13px;padding:7px 14px;background:transparent;border:1px solid rgba(212,160,23,.42);border-radius:2px;color:#8A6510;letter-spacing:1px;transition:transform .2s,box-shadow .2s}
+.kw-list .badge:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(160,110,20,.12)}
+.hero-actions{display:flex;flex-wrap:wrap;gap:16px}
+/* ---------- 首屏右侧：红色基因图文板块（红旗 · 五星 · 华表） ---------- */
+.gene-panel{
+  position:relative;max-width:430px;width:100%;margin:0 auto;
+  padding:22px 26px 24px;text-align:center;
+  background:linear-gradient(160deg,#FFFDF9 0%,#FBF4EA 100%);
+  border:1px solid var(--brick-line);
+  box-shadow:0 14px 34px rgba(124,51,43,.10);
+  transition:box-shadow .25s ease;
+}
+.gene-panel:hover{box-shadow:0 20px 42px rgba(124,51,43,.16)}
+.gene-panel::before{
+  content:"";position:absolute;top:0;left:26px;right:26px;height:2px;
+  background:linear-gradient(90deg,rgba(212,160,23,0),rgba(212,160,23,.75),rgba(212,160,23,0));
+}
+.gene-art{max-width:300px;margin:0 auto 8px}
+.gene-art img{
+  display:block;width:100%;height:auto;
+  mix-blend-mode:multiply;              /* 图片白底融入米白卡面，不出现白色方块 */
+}
+.gene-eyebrow{display:block;font-size:12.5px;letter-spacing:3px;color:var(--brick-deep)}
+.gene-title{margin:10px 0 12px;font-size:26px;letter-spacing:5px;font-weight:600;color:var(--brick-deep)}
+.gene-desc{margin:0 auto;max-width:340px;text-align:left;color:var(--gray);font-size:14px;line-height:1.95}
+.gene-sign{
+  margin:16px 0 0;padding-top:14px;border-top:1px solid rgba(162,74,64,.22);
+  color:#8A6510;font-size:12.5px;letter-spacing:2px;
+}
+.theme-band{position:relative;background:linear-gradient(110deg,#6E312C 0%,#8A3E35 52%,#6E312C 100%);overflow:hidden;border-top:1px solid rgba(231,198,107,.22);border-bottom:1px solid rgba(231,198,107,.22)}
+.theme-band-in{position:relative;max-width:1180px;margin:0 auto;padding:22px 24px;display:flex;align-items:center;justify-content:center;gap:34px;flex-wrap:wrap;text-align:center}
+.theme-band-in span{color:#F0DCB4;font-size:clamp(17px,2.3vw,24px);letter-spacing:6px}
+
+/* ---------- 红色足迹时间线（横向排列） ---------- */
+.timeline{
+  position:relative;
+  margin-top:8px;
+  padding:16px 2px 26px;
+  background:
+    radial-gradient(70% 140% at 10% 0%,rgba(200,16,46,.045),rgba(255,253,249,0) 70%),
+    radial-gradient(60% 140% at 92% 100%,rgba(212,160,23,.06),rgba(255,253,249,0) 72%);
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+  scrollbar-color:var(--gold) var(--gold-soft);
+}
+.timeline::-webkit-scrollbar{height:8px}
+.timeline::-webkit-scrollbar-track{background:var(--gold-soft);border-radius:8px}
+.timeline::-webkit-scrollbar-thumb{background:linear-gradient(90deg,var(--gold),var(--red));border-radius:8px}
+.timeline-track{
+  position:relative;
+  display:flex;
+  align-items:stretch;
+  gap:22px;
+  width:max-content;
+  min-width:100%;
+  padding:0 2px 10px;
+}
+.timeline-track::before{
+  content:"";
+  position:absolute;
+  left:0;right:0;top:7px;height:2px;
+  background:linear-gradient(90deg,rgba(212,160,23,.2),var(--gold) 8%,var(--red) 92%,rgba(200,16,46,.2));
+}
+.tl-item{
+  position:relative;
+  flex:0 0 276px;
+  width:276px;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+}
+.tl-dot,.tl-item.right .tl-dot{
+  position:relative;
+  left:20px;right:auto;top:0;
+  width:16px;height:16px;
+  margin:0 0 20px;
+  border-radius:50%;
+  background:var(--paper);
+  border:3px solid var(--red);
+  box-shadow:0 0 0 5px rgba(200,16,46,.10);
+  z-index:2;
+  flex:0 0 auto;
+}
+.tl-card{position:relative;overflow:hidden;flex:1 1 auto;padding:20px 22px;display:flex;flex-direction:column;background-color:var(--paper)}
+/* 画面作为整体背景：铺满整卡、不设独立图框 */
+.tl-card.has-bg{
+  background-repeat:no-repeat;
+  background-size:100% auto;
+  background-position:center top;
+  padding-top:180px;
+}
+/* 统一色调层：让油画、黑白照片、彩色场景、国画的色相靠拢 */
+.tl-card.has-bg::before,
+.tl-card.has-bg::after{
+  content:"";position:absolute;left:0;right:0;top:0;bottom:0;pointer-events:none;
+}
+.tl-card.has-bg::before{
+  background:linear-gradient(180deg,
+    rgba(174,56,42,.12) 0px,
+    rgba(212,160,23,.08) 90px,
+    rgba(255,253,249,0) 176px);
+}
+/* 渐隐衔接层：画面自然过渡到卡片米白，不出现硬边或独立图像 */
+.tl-card.has-bg::after{
+  background:linear-gradient(180deg,
+    rgba(255,253,249,0) 0px,
+    rgba(255,253,249,.06) 64px,
+    rgba(255,253,249,.55) 112px,
+    rgba(255,253,249,.95) 152px,
+    #FFFDF9 176px,
+    #FFFDF9 100%);
+}
+.tl-card > *{position:relative;z-index:1}
+.tl-card > .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.tl-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:9px}
+.tl-time{font-size:14px;font-weight:700;letter-spacing:1px;color:var(--red);background:var(--red-soft);padding:3px 11px;border-radius:6px}
+.tl-place{display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--gray)}
+.tl-place svg{width:14px;height:14px;fill:var(--gold)}
+.tl-card h3{font-size:19px;color:var(--ink);letter-spacing:1px;margin-bottom:8px}
+.tl-card p{font-size:14.5px;color:var(--gray);line-height:1.85}
+.tl-foot{margin-top:auto;padding-top:14px;display:flex;align-items:center;gap:10px}
+
+/* ---------- 英雄人物（横向排列） ---------- */
+.people{
+  position:relative;
+  margin-top:8px;
+  padding:16px 2px 26px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+  scrollbar-color:var(--gold) var(--gold-soft);
+}
+.people::-webkit-scrollbar{height:8px}
+.people::-webkit-scrollbar-track{background:var(--gold-soft);border-radius:8px}
+.people::-webkit-scrollbar-thumb{background:linear-gradient(90deg,var(--gold),var(--red));border-radius:8px}
+.people-track{
+  position:relative;
+  display:flex;
+  align-items:stretch;
+  gap:22px;
+  width:max-content;
+  min-width:100%;
+  padding:0 2px 10px;
+}
+.people-track::before{
+  content:"";
+  position:absolute;
+  left:0;right:0;top:7px;height:2px;
+  background:linear-gradient(90deg,rgba(212,160,23,.2),var(--gold) 8%,var(--red) 92%,rgba(200,16,46,.2));
+}
+.person-item{
+  position:relative;
+  flex:0 0 276px;
+  width:276px;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+}
+.person-dot{
+  position:relative;
+  left:20px;right:auto;top:0;
+  width:16px;height:16px;
+  margin:0 0 20px;
+  border-radius:50%;
+  background:var(--paper);
+  border:3px solid var(--red);
+  box-shadow:0 0 0 5px rgba(200,16,46,.10);
+  z-index:2;
+  flex:0 0 auto;
+}
+.person{flex:1 1 auto;display:flex;flex-direction:column;overflow:hidden}
+.person-art{position:relative;height:260px;flex:0 0 auto;background:linear-gradient(145deg,var(--red-deep),var(--red-2));display:flex;align-items:center;justify-content:center;overflow:hidden}
+.person-art::before{content:"";position:absolute;width:190px;height:190px;border:1px solid rgba(231,198,107,.28);border-radius:50%}
+.person-art::after{content:"";position:absolute;width:130px;height:130px;border:1px solid rgba(231,198,107,.20);border-radius:50%}
+.person-art .bg-star{position:absolute;width:120px;height:120px;fill:rgba(231,198,107,.13)}
+.person-photo{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;object-position:center center;background:linear-gradient(160deg,#FFFDF9,#F5EDE2);filter:sepia(.14) contrast(1.03) brightness(1.02)}
+.person-art.has-photo::before,.person-art.has-photo::after{display:none}
+.person-art.has-photo .bg-star{display:none}
+.person-art .glyph{position:relative;font-size:62px;line-height:1;color:var(--gold-2);letter-spacing:2px;font-weight:700}
+.person-art .mini{position:absolute;right:14px;bottom:12px;z-index:2;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,.9);padding:3px 9px;border-radius:999px;background:rgba(94,16,30,.66);text-shadow:0 1px 3px rgba(60,8,16,.65)}
+.person-body{padding:20px 20px 22px;flex:1 1 auto;display:flex;flex-direction:column}
+.person-body h3{font-size:20px;letter-spacing:2px;color:var(--red-deep);margin-bottom:3px}
+.person-role{font-size:13px;color:var(--gold);font-weight:600;margin-bottom:11px}
+.person-desc{font-size:14px;color:var(--gray);line-height:1.82}
+.person-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:auto;padding-top:14px;border-top:1px dashed var(--line)}
+
+/* ---------- 精神谱系标签页 ---------- */
+.spirit-box{background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.tabs{display:flex;gap:4px;padding:10px 14px 0;background:linear-gradient(180deg,#FFF9F0,#FFFDF9);border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs::-webkit-scrollbar{display:none}
+.tabs{scrollbar-width:none}
+.tab{position:relative;flex:1 0 auto;min-width:120px;padding:14px 18px 16px;border:0;background:transparent;color:var(--gray);font-size:16px;font-weight:600;letter-spacing:2px;transition:color .2s,background-color .2s}
+.tab::after{content:"";position:absolute;left:50%;bottom:0;width:0;height:3px;background:linear-gradient(90deg,var(--red),var(--gold));transform:translateX(-50%);transition:width .22s;border-radius:3px 3px 0 0}
+.tab[aria-selected="true"]{color:var(--red-deep);background:rgba(200,16,46,.05)}
+.tab[aria-selected="true"]::after{width:70%}
+.tab:hover{color:var(--red)}
+.tab-panel{padding:30px 30px 34px;scroll-margin-top:96px}
+.tab-panel.panel-in{animation:panelFade .22s ease both}
+@keyframes panelFade{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+.panel-intro{font-size:14.5px;color:var(--gray);margin-bottom:24px;padding-left:14px;border-left:3px solid var(--gold)}
+.stage-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.stage{padding:20px;border-radius:14px;background:linear-gradient(160deg,#FFFDF9,#FBF5EC);border:1px solid var(--line);transition:transform .2s,box-shadow .2s}
+.stage:hover{transform:translateY(-5px);box-shadow:var(--shadow)}
+.stage-num{font-family:Georgia,serif;font-size:22px;color:var(--gold);opacity:.85}
+.stage-era{display:block;font-size:12.5px;color:var(--red);letter-spacing:1px;margin:2px 0 8px}
+.stage h4{font-size:18px;letter-spacing:1px;color:var(--red-deep);margin-bottom:8px}
+.stage p{font-size:14px;color:var(--gray);line-height:1.8}
+.spirit-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
+.sp-card{padding:22px;border-radius:14px;border:1px solid var(--line);background:var(--paper);position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.sp-card::before{content:"";position:absolute;top:0;left:0;width:100%;height:4px;background:linear-gradient(90deg,var(--red),var(--gold))}
+.sp-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-h)}
+.sp-card h4{font-size:19px;color:var(--red-deep);letter-spacing:2px;margin-bottom:12px}
+.sp-core{padding:12px 14px;background:var(--gold-soft);border-radius:10px;font-size:14px;color:#7A5710;line-height:1.8;margin-bottom:12px}
+.sp-card p{font-size:14px;color:var(--gray);line-height:1.85}
+
+/* ---------- 革命历程 × 红色地图（联动展示） ---------- */
+.journey-lead{font-size:14.5px;color:var(--gray);margin-bottom:16px;padding-left:14px;border-left:3px solid var(--gold)}
+.journey-eras{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:20px}
+.j-era{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border:1px solid rgba(212,160,23,.38);background:var(--paper);border-radius:999px;font-size:13px;color:#8A6510;transition:background-color .2s,color .2s,border-color .2s,transform .2s}
+.j-era b{font-family:Georgia,serif;font-weight:600;color:var(--red);font-size:12px}
+.j-era:hover,.j-era.active{background:var(--red);border-color:var(--red);color:#fff;transform:translateY(-2px)}
+.j-era:hover b,.j-era.active b{color:var(--gold-2)}
+.journey-era-note{margin-bottom:16px;padding:10px 14px;border-radius:10px;background:var(--gold-soft);font-size:13.5px;line-height:1.8;color:#7A5710}
+.journey-bar{padding:12px 2px 22px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--gold) var(--gold-soft)}
+.journey-bar::-webkit-scrollbar{height:8px}
+.journey-bar::-webkit-scrollbar-track{background:var(--gold-soft);border-radius:8px}
+.journey-bar::-webkit-scrollbar-thumb{background:linear-gradient(90deg,var(--gold),var(--red));border-radius:8px}
+.journey-track{position:relative;display:flex;align-items:stretch;gap:14px;width:max-content;min-width:100%;padding:0 2px 10px}
+.journey-track::before{content:"";position:absolute;left:0;right:0;top:7px;height:2px;background:linear-gradient(90deg,rgba(212,160,23,.2),var(--gold) 8%,var(--red) 92%,rgba(200,16,46,.2))}
+.j-node{position:relative;flex:0 0 172px;width:172px;display:flex;flex-direction:column;padding:0;border:0;background:transparent;text-align:left}
+.j-dot{position:relative;left:14px;top:0;width:16px;height:16px;margin:0 0 16px;border-radius:50%;background:var(--paper);border:3px solid var(--red);box-shadow:0 0 0 5px rgba(200,16,46,.10);z-index:2;flex:0 0 auto;transition:background-color .2s,border-color .2s,box-shadow .2s,transform .2s}
+.j-card{display:block;padding:14px 15px 16px;background:var(--paper);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s,border-color .2s,background-color .2s}
+.j-node:hover .j-card{transform:translateY(-4px);box-shadow:var(--shadow-h);border-color:rgba(212,160,23,.5)}
+.j-order{display:block;font-family:Georgia,serif;font-size:12px;letter-spacing:1px;color:var(--gold);margin-bottom:4px}
+.j-time{display:block;font-size:12.5px;color:var(--red);font-weight:600;margin-bottom:5px}
+.j-title{display:block;font-size:14.5px;line-height:1.5;color:var(--ink);font-weight:600}
+.j-era-tag{display:inline-block;margin-top:9px;padding:2px 9px;border-radius:999px;background:var(--gold-soft);font-size:11.5px;color:#8A6510}
+.j-node[aria-selected="true"] .j-dot{background:var(--red);border-color:var(--gold);box-shadow:0 0 0 6px rgba(212,160,23,.22);transform:scale(1.12)}
+.j-node[aria-selected="true"] .j-card{background:linear-gradient(160deg,#FFF6F6,#FBE9E6);border-color:var(--red);box-shadow:0 12px 28px rgba(142,16,32,.18)}
+.j-node[aria-selected="true"] .j-title{color:var(--red-deep)}
+.j-node[aria-selected="true"] .j-era-tag{background:var(--red);color:#fff}
+.map-layout{display:grid;grid-template-columns:1fr;gap:0}
+.map-canvas{background:linear-gradient(160deg,#FFFDF9,#FBF4EA);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px 14px 8px}
+.map-canvas svg{display:block;width:100%;height:auto}
+.province{stroke:var(--red);stroke-width:2.2;stroke-linejoin:round}
+.province-inner{fill:none;stroke:rgba(200,16,46,.18);stroke-width:1.2}
+.corridor{fill:none;stroke:var(--gold);stroke-width:2;stroke-dasharray:7 7;opacity:.75}
+.map-label{fill:var(--gray-2);font-size:14px;letter-spacing:3px}
+.map-zone{fill:rgba(200,16,46,.22);opacity:0;transition:opacity .22s ease}
+.map-zone.active{opacity:1}
+.map-point{cursor:pointer}
+.map-point .halo{fill:rgba(200,16,46,.13);opacity:0;transition:opacity .2s}
+.map-point:hover .halo,.map-point:focus .halo,.map-point.active .halo{opacity:1}
+.map-point .pulse{fill:var(--red);opacity:.45;animation:pulseFade 2.8s ease-in-out infinite}
+@keyframes pulseFade{0%,100%{opacity:.42}50%{opacity:.08}}
+.map-point .dot{fill:var(--gold);stroke:#fff;stroke-width:3;transition:fill .2s}
+.map-point:hover .dot,.map-point:focus .dot,.map-point.active .dot{fill:var(--red)}
+.map-point .core{fill:var(--red-deep)}
+.map-point.active .core{fill:#fff}
+.map-point .p-label{fill:var(--red-deep);font-size:15px;font-weight:600;paint-order:stroke;stroke:#FFFDF9;stroke-width:4px;stroke-linejoin:round}
+.map-point .p-order{fill:var(--red);font-size:11.5px;font-weight:600;letter-spacing:1px;paint-order:stroke;stroke:#FFFDF9;stroke-width:3px;stroke-linejoin:round}
+.national-mark{cursor:pointer}
+.national-mark rect{fill:#FFFDF9;stroke:rgba(200,16,46,.3);stroke-width:1.4;transition:fill .2s,stroke .2s}
+.national-mark circle{fill:var(--gold);transition:fill .2s}
+.national-mark text{fill:var(--gray);font-size:13px;letter-spacing:1px;transition:fill .2s}
+.national-mark:hover rect,.national-mark:focus rect,.national-mark.active rect{fill:var(--red-soft);stroke:var(--red)}
+.national-mark:hover circle,.national-mark.active circle{fill:var(--red)}
+.national-mark:hover text,.national-mark.active text{fill:var(--red-deep)}
+.map-caption{text-align:center;font-size:12.5px;color:var(--gray-2);padding:2px 0 8px}
+
+/* ---------- 页脚 ---------- */
+.footer{position:relative;background:linear-gradient(160deg,#3A0E16 0%,#5B111C 55%,#45101A 100%);color:rgba(255,247,240,.86);overflow:hidden;scroll-margin-top:96px}
+.footer::before{content:"";position:absolute;top:-130px;right:-90px;width:380px;height:380px;border:1px solid rgba(231,198,107,.12);border-radius:50%}
+.footer-in{position:relative;max-width:1180px;margin:0 auto;padding:58px 24px 26px}
+.footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:34px}
+.footer h3{font-size:16px;letter-spacing:2px;color:#fff;margin-bottom:16px;padding-left:12px;border-left:3px solid var(--gold)}
+.footer p{font-size:13.5px;line-height:2;color:rgba(255,247,240,.78)}
+.footer-nav{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin:34px 0 22px;padding:18px 0;border-top:1px solid rgba(231,198,107,.18);border-bottom:1px solid rgba(231,198,107,.18)}
+.footer-nav span{font-size:13px;color:var(--gold-2);letter-spacing:2px}
+.footer-nav a{font-size:13.5px;color:rgba(255,247,240,.8);padding:4px 10px;border-radius:6px;transition:color .2s,background-color .2s}
+.footer-nav a:hover{color:var(--gold-2);background:rgba(231,198,107,.1)}
+.footer-bottom{display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between;font-size:12.5px;color:rgba(255,247,240,.58)}
+
+/* ---------- 返回顶部 ---------- */
+.backtop{position:fixed;right:22px;bottom:24px;z-index:95;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,var(--red),var(--red-deep));color:#fff;box-shadow:0 8px 22px rgba(142,16,32,.32);opacity:0;visibility:hidden;transform:translateY(14px);transition:opacity .22s,transform .22s,visibility .22s}
+.backtop.show{opacity:1;visibility:visible;transform:none}
+.backtop:hover{transform:translateY(-4px)}
+.backtop svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- 响应式 ---------- */
+@media (max-width:1000px){
+  .hero{padding-top:72px}
+  .hero-grid{grid-template-columns:1fr;gap:28px;padding-bottom:72px}
+  .hero-title{letter-spacing:6px}
+  .hero-title .sub{letter-spacing:8px}
+  .gene-panel{max-width:360px}
+  .journey-bar{padding-bottom:18px}
+}
+@media (max-width:860px){
+  :root{--nav-h:104px}
+  .nav-in{gap:8px;padding:8px 16px}
+  .nav-links{width:100%;margin-left:0;flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;padding-bottom:2px}
+  .nav-links a{padding:5px 10px;font-size:13px}
+  .section{padding:66px 20px;scroll-margin-top:116px}
+  .section::before{display:none}
+  .timeline{padding:14px 0 22px}
+  .timeline-track{gap:16px}
+  .tl-item,.tl-item.right{flex-basis:240px;width:240px}
+  .tl-card{padding:18px 18px}
+  .tl-card.has-bg{padding-top:156px}
+  .tl-card.has-bg::after{
+    background:linear-gradient(180deg,
+      rgba(255,253,249,0) 0px,
+      rgba(255,253,249,.06) 56px,
+      rgba(255,253,249,.55) 98px,
+      rgba(255,253,249,.95) 134px,
+      #FFFDF9 152px,
+      #FFFDF9 100%);
+  }
+  .tl-dot,.tl-item.right .tl-dot{left:16px}
+  .people{padding:14px 0 22px}
+  .people-track{gap:16px}
+  .person-item{flex-basis:240px;width:240px}
+  .person-body{padding:18px 18px}
+  .person-art{height:230px}
+  .person-dot{left:16px}
+  .tab-panel{padding:22px 20px 26px}
+  .journey-track{gap:12px}
+  .j-node{flex-basis:158px;width:158px}
+  .j-card{padding:12px 13px 14px}
+  .journey-lead{font-size:13.5px}
+}
+@media (max-width:560px){
+  .hero{padding-top:52px}
+  .hero-grid{padding-bottom:56px}
+  .hero-title{letter-spacing:4px}
+  .hero-title .sub{letter-spacing:6px}
+  .theme-band-in{gap:14px;padding:22px 16px}
+  .theme-band-in span{letter-spacing:2px;font-size:16px}
+  .section-head{margin-bottom:32px}
+  .timeline-track{gap:14px}
+  .tl-item,.tl-item.right{flex-basis:218px;width:218px}
+  .tl-card{padding:16px 16px}
+  .tl-card.has-bg{padding-top:136px}
+  .tl-card.has-bg::after{
+    background:linear-gradient(180deg,
+      rgba(255,253,249,0) 0px,
+      rgba(255,253,249,.06) 48px,
+      rgba(255,253,249,.55) 86px,
+      rgba(255,253,249,.95) 118px,
+      #FFFDF9 132px,
+      #FFFDF9 100%);
+  }
+  .tl-card h3{font-size:17px}
+  .tl-dot,.tl-item.right .tl-dot{left:14px}
+  .people-track{gap:14px}
+  .person-item{flex-basis:218px;width:218px}
+  .person-body{padding:16px 16px}
+  .person-body h3{font-size:18px}
+  .person-art{height:200px}
+  .person-dot{left:14px}
+  .journey-track{gap:10px}
+  .j-node{flex-basis:146px;width:146px}
+  .j-title{font-size:13.5px}
+  .map-canvas{padding:10px 8px 6px}
+  .footer-in{padding:44px 20px 22px}
+  .backtop{right:14px;bottom:16px;width:42px;height:42px}
+}
+/* ---------- 开屏页：本地无声短片全屏播放一次，播完淡出进入主页 ---------- */
+body.intro-on{overflow:hidden}
+body.intro-on .nav,body.intro-on .main{opacity:0}
+.nav,.main{transition:opacity .62s ease}
+.intro{
+  position:fixed;top:0;right:0;bottom:0;left:0;z-index:9999;
+  overflow:hidden;
+  background:#22161A;                    /* 与短片末帧暗色一致，衔接自然 */
+  opacity:1;transition:opacity .62s ease;
+}
+.intro.is-out{opacity:0;pointer-events:none}
+/* 首帧静帧作模糊铺底：竖屏/超宽屏下不出现黑边，加载期间也有画面 */
+.intro::before{
+  content:"";position:absolute;top:0;right:0;bottom:0;left:0;z-index:0;
+  background:url('images/intro-poster.jpg') center center / cover no-repeat;
+  filter:blur(16px) brightness(.42) saturate(.9);
+  transform:scale(1.06);
+}
+.intro-video{
+  position:absolute;top:0;right:0;bottom:0;left:0;
+  width:100%;height:100%;z-index:1;
+  object-fit:contain;                   /* 完整呈现画面，短片内金字不被裁切 */
+  opacity:0;transition:opacity .45s ease;
+}
+.intro-video.ready{opacity:1}
+.intro-skip{
+  position:absolute;right:24px;bottom:22px;z-index:2;
+  padding:9px 18px;border:1px solid rgba(242,215,154,.62);
+  border-radius:2px;background:rgba(28,16,20,.42);
+  color:#F2D79A;font:inherit;font-size:13px;letter-spacing:.12em;
+  cursor:pointer;
+}
+.intro-skip:hover{background:rgba(242,215,154,.18)}
+.intro-skip:focus-visible{
+  background:rgba(242,215,154,.18);
+  outline:2px solid #F2D79A;outline-offset:2px;
+}
+@media (max-width:560px){
+  .intro-skip{right:14px;bottom:16px;padding:8px 14px;font-size:12px}
+}
+@media (prefers-reduced-motion:reduce){
+  html,.journey-bar{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  .reveal{opacity:1!important;transform:none!important}
+  .intro{display:none!important}       /* 减少动效偏好：完全跳过开屏 */
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 开屏页：本地无声短片播放一次 → 自动淡出进入主页；可跳过、解码失败自动跳过 ===== -->
+<div class="intro" id="intro">
+  <video class="intro-video" id="introVideo" muted autoplay playsinline preload="auto"
+         poster="images/intro-poster.jpg" aria-hidden="true" tabindex="-1">
+    <source src="video/intro.mp4" type="video/mp4">
+  </video>
+  <button class="intro-skip" id="introSkip" type="button">跳过开屏</button>
+</div>
+
+<a class="skip" href="#main">跳转到主要内容</a>
+
+<!-- ===== 固定顶部导航 ===== -->
+<header class="nav" id="topbar">
+  <div class="nav-in">
+    <a class="brand" href="#home" aria-label="返回首页">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.4l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.3l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg></span>
+      <span class="brand-txt"><strong class="serif" id="brandName">陇原红色印记</strong><small id="brandSub">第五届红色网页设计大赛参赛作品</small></span>
+    </a>
+    <nav class="nav-links" id="navLinks" aria-label="页面锚点导航">
+      <a href="#home">首页</a>
+      <a href="#footprints">红色足迹</a>
+      <a href="#heroes">英雄人物</a>
+      <a href="#spirit">精神谱系</a>
+      <a href="#map">红色地图</a>
+    </nav>
+  </div>
+</header>
+
+<main class="main" id="main">
+
+  <!-- ===== 1. 首屏 ===== -->
+  <section class="hero" id="home" aria-labelledby="heroTitle">
+    <svg class="hero-bg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <g fill="#8E3A32">
+        <path d="M0 620 L128 552 L238 596 L352 462 L476 580 L602 486 L734 598 L862 448 L1006 582 L1142 494 L1290 590 L1440 514 L1440 900 L0 900 Z" opacity=".5"/>
+        <path d="M0 706 L158 640 L288 682 L422 570 L558 666 L702 584 L848 688 L992 592 L1134 674 L1272 606 L1440 670 L1440 900 L0 900 Z" opacity=".85"/>
+      </g>
+      <g fill="none" stroke="#A24A40" stroke-width="3.4" opacity=".75">
+        <path d="M0 764 C240 728 336 798 562 772 S922 710 1162 748 S1362 784 1440 758"/>
+      </g>
+      <g fill="none" stroke="#D4A017" stroke-width="1.4" opacity=".55">
+        <path d="M0 782 C240 746 336 816 562 790 S922 728 1162 766 S1362 802 1440 776"/>
+      </g>
+    </svg>
+
+    <div class="hero-grid">
+      <div class="hero-copy reveal">
+        <span class="hero-tag"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.4l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.3l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg><span id="heroTag">甘肃农业大学第五届红色网页设计大赛参赛作品</span></span>
+        <h1 class="hero-title serif" id="heroTitle"><span>陇原红色印记</span><span class="sub">青春赓续血脉</span></h1>
+        <div class="hero-theme" id="heroTheme">赓续红色血脉 · 传承红色基因 · 坚定理想信念</div>
+        <p class="hero-lead" id="heroLead"></p>
+        <div class="kw-list" id="kwList" aria-label="红色精神关键词"></div>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#spirit">开始学习<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a class="btn btn-ghost" href="#footprints">查看红色足迹<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M6 14l6 6 6-6"/></svg></a>
+        </div>
+      </div>
+
+      <div class="gene-panel reveal" id="genePanel">
+        <div class="gene-art">
+          <img id="geneImg" src="images/red-gene.png" width="250" height="175"
+               alt="迎风飘扬的红旗与金色华表，金星闪耀，象征红色基因与信仰传承">
+        </div>
+        <span class="gene-eyebrow" id="geneEyebrow">旗帜引领 · 血脉赓续</span>
+        <h2 class="gene-title serif" id="geneTitle">红色基因</h2>
+        <p class="gene-desc" id="geneDesc">红旗漫卷、金星闪耀，华表巍然铭记来路。从南梁星火到陇原热土，先辈的信仰穿越岁月，化作青年心中的红色基因，代代相传、生生不息。</p>
+        <p class="gene-sign" id="geneSign">不忘初心 · 赓续血脉 · 青春接力</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="theme-band" aria-hidden="true">
+    <div class="theme-band-in"><span>赓续红色血脉</span><span>传承红色基因</span><span>坚定理想信念</span></div>
+  </div>
+
+  <!-- ===== 2. 红色足迹时间线 ===== -->
+  <section class="section" id="footprints" data-num="01" aria-labelledby="fpTitle">
+    <div class="section-head reveal">
+      <span class="eyebrow">红色足迹 · 时间线</span>
+      <h2 class="section-title serif" id="fpTitle">循着时间，走进陇原红色岁月</h2>
+      <p class="section-desc">以甘肃红色资源为主、全国红色历程为辅，按时间顺序梳理公开史实节点，并为每个节点配置对应的历史图片，在一条时间线上读懂信仰的力量。</p>
+    </div>
+    <div class="timeline" id="timeline" tabindex="0" role="region" aria-label="红色足迹时间线，可横向滚动查看全部节点"></div>
+  </section>
+
+  <!-- ===== 3. 英雄人物卡片 ===== -->
+  <section class="section" id="heroes" data-num="02" aria-labelledby="hrTitle">
+    <div class="section-head reveal">
+      <span class="eyebrow">英雄人物 · 榜样力量</span>
+      <h2 class="section-title serif" id="hrTitle">铭记闪光的名字</h2>
+      <p class="section-desc">以历史照片与事迹文字记录与陇原大地相关的革命先辈与英雄群体，呈现事迹摘要与精神关键词；照片为公开史料配图，仅作学习展示。</p>
+    </div>
+    <div class="people" id="people" tabindex="0" role="region" aria-label="英雄人物卡片，可横向滚动查看全部人物"></div>
+  </section>
+
+  <!-- ===== 4. 红色精神谱系（标签页） ===== -->
+  <section class="section" id="spirit" data-num="03" aria-labelledby="spTitle">
+    <div class="section-head reveal">
+      <span class="eyebrow">红色精神 · 谱系</span>
+      <h2 class="section-title serif" id="spTitle">从榜样到精神</h2>
+      <p class="section-desc">革命历程已移至下方与红色地图联动呈现；此处两个栏目可用鼠标点击，也可用键盘左右方向键切换，内容随标签柔和过渡。</p>
+    </div>
+    <div class="spirit-box reveal">
+      <div class="tabs" id="tabs" role="tablist" aria-label="红色精神谱系栏目"></div>
+      <div id="tabPanels"></div>
+    </div>
+  </section>
+
+  <!-- ===== 5. 革命历程 × 红色地图（联动展示） ===== -->
+  <section class="section" id="map" data-num="04" aria-labelledby="mapTitle">
+    <div class="section-head reveal">
+      <span class="eyebrow">革命历程 · 红色地图</span>
+      <h2 class="section-title serif" id="mapTitle">循着历程，点亮陇原红色坐标</h2>
+      <p class="section-desc">以甘肃轮廓示意图为空间载体，把革命历程关键节点按时间顺序排成线索。点击历程节点或地图金色点位，对应点位、关联区域与阶段脉络同步高亮，历程线索清晰可读。</p>
+    </div>
+    <div class="journey reveal">
+      <p class="journey-lead" id="journeyIntro"></p>
+      <div class="journey-eras" id="journeyEras" aria-label="革命历程阶段"></div>
+      <p class="journey-era-note" id="journeyEraNote" role="tabpanel" aria-live="polite"></p>
+      <div class="journey-bar" id="journeyBar">
+        <div class="journey-track" id="journeyTrack" role="tablist" aria-label="革命历程节点时间线"></div>
+      </div>
+      <div class="map-layout">
+        <div class="map-canvas">
+          <svg id="mapSvg" viewBox="0 0 760 440" role="group" aria-label="甘肃红色资源点位与革命历程联动示意图">
+            <defs>
+              <linearGradient id="landFill" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#FAE9E6"/><stop offset="1" stop-color="#EFCFC9"/>
+              </linearGradient>
+            </defs>
+            <path class="province" fill="url(#landFill)" d="M70 118 L120 86 L190 78 L246 96 L286 118 L330 142 L372 168 L410 196 L448 214 L486 200 L536 182 L596 176 L632 196 L626 232 L592 252 L540 256 L496 268 L470 300 L436 326 L398 330 L366 312 L330 292 L292 270 L250 244 L206 214 L164 186 L122 162 L86 146 Z"/>
+            <g id="mapZones" aria-hidden="true"></g>
+            <path class="province-inner" d="M92 128 L150 104 L214 108 L268 134 L322 164 L378 196 L430 220"/>
+            <path class="corridor" d="M104 112 Q240 142 398 210"/>
+            <text class="map-label" x="176" y="128" transform="rotate(16 176 128)">河西走廊</text>
+            <text class="map-label" x="548" y="238">陇 东</text>
+            <g id="nationalMark" class="national-mark" role="button" tabindex="0" aria-label="全国历程背景节点，点击切换">
+              <rect x="56" y="26" width="212" height="40" rx="20"/>
+              <circle cx="78" cy="46" r="6"/>
+              <text id="nationalText" x="94" y="51">全国历程背景</text>
+            </g>
+            <g id="mapPoints"></g>
+          </svg>
+          <p class="map-caption">甘肃红色点位示意图 · 点位序号对应上方历程节点 · 非标准测绘地图，仅用于红色资源学习展示</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ===== 页脚 ===== -->
+<footer class="footer" id="footer">
+  <div class="footer-in">
+    <div class="footer-grid">
+      <div>
+        <h3>赛事信息</h3>
+        <p>主办：甘肃农业大学创新创业学院</p>
+        <p>承办：甘肃农业大学信息科学技术学院</p>
+        <p>赛事：甘肃农业大学第五届红色网页设计大赛</p>
+      </div>
+      <div>
+        <h3>参赛者信息</h3>
+        <p>参赛者：赵旭</p>
+        <p>学院专业：理学院 材料化学</p>
+        <p>联系方式：19288247717</p>
+      </div>
+    </div>
+    <div class="footer-nav" id="footerNav" aria-label="页脚快速导航">
+      <span>快速导航</span>
+      <a href="#home">首页</a><a href="#footprints">红色足迹</a><a href="#heroes">英雄人物</a>
+      <a href="#spirit">精神谱系</a><a href="#map">红色地图</a>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 陇原红色印记 · 参赛作品</span>
+      <span>版权说明：本页仅用于大赛展示与红色文化学习交流，历史表述以公开权威资料为准。</span>
+    </div>
+  </div>
+</footer>
+
+<a class="backtop" id="backtop" href="#home" aria-label="返回顶部" title="返回顶部">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</a>
+
+<!-- ===== 脚本区：正式提交时可拆分为 js/main.js ===== -->
+<script>
+/* 全站数据：所有栏目内容集中于此，缺失字段时对应模块或元素自动隐藏 */
+const redSiteData = {
+  site: {
+    name: '陇原红色印记',
+    sub: '青春赓续血脉',
+    contest: '甘肃农业大学第五届红色网页设计大赛参赛作品',
+    navSub: '第五届红色网页设计大赛参赛作品',
+    theme: '赓续红色血脉 · 传承红色基因 · 坚定理想信念',
+    intro: '以甘肃红色资源为经、以中国共产党人精神谱系为纬，循着南梁星火、长征北上、会宁会师、河西烽烟与兰州解放的足迹，在浏览与点击之间，让红色历史可感、可学、可传。',
+    gene: {
+      image: 'images/red-gene.png',
+      alt: '迎风飘扬的红旗与金色华表，金星闪耀，象征红色基因与信仰传承',
+      eyebrow: '旗帜引领 · 血脉赓续',
+      title: '红色基因',
+      desc: '红旗漫卷、金星闪耀，华表巍然铭记来路。从南梁星火到陇原热土，先辈的信仰穿越岁月，化作青年心中的红色基因，代代相传、生生不息。',
+      sign: '不忘初心 · 赓续血脉 · 青春接力'
+    }
+  },
+  keywords: ['伟大建党精神', '长征精神', '南梁精神', '会师精神', '延安精神'],
+  footprints: [
+    {time:'1921年7月', bg:'images/bg-01.jpg', place:'上海 · 嘉兴南湖', title:'中国共产党成立', desc:'中国共产党第一次全国代表大会召开，宣告中国共产党成立，中国革命的面貌从此焕然一新。', scope:'全国'},
+    {time:'1934年10月', bg:'images/bg-02.jpg', place:'江西于都等地', title:'中央红军开始长征', desc:'红军主力实行战略转移，踏上举世瞩目的伟大长征，开启了震撼世界的英雄史诗。', scope:'全国'},
+    {time:'1934年11月', bg:'images/bg-03.png', place:'甘肃华池南梁', title:'陕甘边区苏维埃政府成立', desc:'陕甘边革命根据地以南梁为中心逐步形成，成为土地革命战争后期西北革命的重要支点。', scope:'甘肃'},
+    {time:'1935年9月', bg:'images/bg-04.png', place:'甘肃迭部俄界', title:'俄界会议', desc:'中共中央在长征途中召开政治局会议，统一思想、坚定继续北上的战略方向。', scope:'甘肃'},
+    {time:'1935年9月', bg:'images/bg-05.jpg', place:'甘肃通渭榜罗镇', title:'榜罗镇会议', desc:'中央政治局常委会议正式决定把陕北作为红军长征的落脚点，为长征胜利指明方向。', scope:'甘肃'},
+    {time:'1936年10月', bg:'images/bg-06.jpg', place:'甘肃会宁', title:'三大主力红军会宁会师', desc:'红一、红二、红四方面军在会宁地区胜利会师，宣告伟大长征胜利结束，中国革命转入新的阶段。', scope:'甘肃'},
+    {time:'1937年1月', bg:'images/bg-07.png', place:'甘肃高台', title:'西路军血战高台', desc:'中国工农红军西路军在河西走廊浴血奋战，高台一役中将士们宁死不屈、壮烈牺牲，用生命书写忠诚。', scope:'甘肃'},
+    {time:'1949年8月', bg:'images/bg-08.png', place:'甘肃兰州', title:'兰州战役与兰州解放', desc:'人民解放军取得兰州战役胜利，兰州宣告解放，为解放大西北奠定坚实基础。', scope:'甘肃'}
+  ],
+  heroes: [
+    {name:'刘志丹', photo:'images/liu-zhidan.png', role:'陕甘边革命根据地主要创建者之一', desc:'参与领导创建陕甘边革命根据地和陕甘红军，为西北革命根据地的发展奠定基础，被誉为“群众领袖、民族英雄”。', tags:['信念坚定','实事求是'], glyph:'刘'},
+    {name:'谢子长', photo:'images/xie-zichang.png', role:'陕甘红军与根据地创建者之一', desc:'与刘志丹等并肩领导陕甘边游击战争，创建革命武装，始终把群众冷暖放在心上，深受百姓爱戴。', tags:['忠诚为民','英勇奋斗'], glyph:'谢'},
+    {name:'吴焕先', photo:'images/wu-huanxian.png', role:'红二十五军政治委员', desc:'率部长征北上，1935年8月在甘肃泾川四坡村战斗中壮烈牺牲，为迎接党中央和中央红军北上作出重要贡献。', tags:['对党忠诚','不怕牺牲'], glyph:'吴'},
+    {name:'董振堂', photo:'images/dong-zhentang.png', role:'中国工农红军第五军军长', desc:'率部参加长征，1937年1月在高台指挥部队与敌血战，弹尽粮绝仍誓死不降，壮烈牺牲。', tags:['血战到底','忠贞不屈'], glyph:'董'},
+    {name:'西路军将士', photo:'images/xi-lu-jun.png', role:'中国工农红军西路军', desc:'1936年至1937年，西路军将士在河西走廊极端艰难的条件下奋勇杀敌、坚守信仰，英名永载史册。', tags:['听党指挥','浴血河西'], glyph:'军'}
+  ],
+  spirits: {
+    tabs: [
+      {
+        label:'英雄人物', type:'list',
+        intro:'从先辈事迹中提炼可学可做的品格，把敬仰转化为青年日常里的具体行动。',
+        items:[
+          {t:'信念如磐', d:'刘志丹、谢子长在创建陕甘边根据地的艰苦岁月里，始终坚守革命理想。'},
+          {t:'听党指挥', d:'吴焕先率红二十五军先行北上，把接应党中央作为最重要的任务。'},
+          {t:'宁死不屈', d:'董振堂与西路军将士在高台等地血战到底，用生命诠释忠诚。'},
+          {t:'面向群众', d:'南梁根据地坚持面向群众、求实开拓，把根深深扎在人民之中。'}
+        ]
+      },
+      {
+        label:'红色精神', type:'cards',
+        intro:'以下为公开表述的精神内涵与学习要点，供青年读者对照学习、内化于心。',
+        items:[
+          {t:'伟大建党精神', core:'坚持真理、坚守理想，践行初心、担当使命，不怕牺牲、英勇斗争，对党忠诚、不负人民', d:'中国共产党的精神之源，凝练了百年奋斗的初心与底色。'},
+          {t:'长征精神', core:'坚定理想信念，不怕艰难险阻，独立自主、实事求是，顾全大局、严守纪律，紧紧依靠人民群众', d:'会宁会师是长征胜利的见证，也是长征精神在陇原留下的深刻印记。'},
+          {t:'南梁精神', core:'面向群众、坚守信念、顾全大局、求实开拓', d:'生长于陕甘边的沟壑塬峁之间，把群众利益放在首位，以实干开辟局面。'},
+          {t:'会师精神', core:'信念坚定、艰苦奋斗、团结一致、敢于胜利', d:'三军会聚凝聚起团结的力量，成为长征留给陇原的宝贵精神财富。'}
+        ]
+      }
+    ]
+  },
+  map: {
+    points:[
+      {id:'gaotai', name:'高台', area:'张掖市 · 河西走廊', x:215, y:150, labelDy:30, desc:'中国工农红军西路军纪念馆所在地。1937年1月，西路军将士在高台浴血奋战、壮烈牺牲，英雄气概永励后人。', spirit:'不怕牺牲 · 忠贞不屈'},
+      {id:'lanzhou', name:'兰州', area:'兰州市', x:400, y:215, labelDy:30, desc:'1949年8月兰州战役取得胜利、兰州解放，为解放大西北打开局面；八路军兰州办事处旧址也见证着抗战岁月的团结与坚守。', spirit:'坚定信念 · 英勇奋斗'},
+      {id:'huining', name:'会宁', area:'白银市会宁县', x:468, y:232, labelDy:30, desc:'1936年10月，红一、红二、红四方面军在此胜利会师，宣告伟大长征胜利结束，会师旧址成为重要的红色地标。', spirit:'团结一致 · 敢于胜利'},
+      {id:'nanliang', name:'南梁', area:'庆阳市华池县', x:566, y:220, labelDy:-26, desc:'陕甘边革命根据地的中心，南梁革命纪念馆记录着刘志丹、谢子长等开创西北革命根据地的峥嵘岁月。', spirit:'面向群众 · 求实开拓'},
+      {id:'diebu', name:'迭部 · 俄界', area:'甘南藏族自治州', x:352, y:286, labelDy:-14, desc:'1935年9月，中共中央在俄界召开政治局会议，统一思想、坚定继续北上的方向，会议旧址留存着长征途中的关键印记。', spirit:'坚定方向 · 顾全大局'},
+      {id:'bangluo', name:'榜罗镇', area:'定西市通渭县', x:432, y:276, labelDy:30, desc:'1935年9月，中央政治局常委会议在榜罗镇召开，正式决定把陕北作为红军长征的落脚点。', spirit:'实事求是 · 坚定方向'}
+    ]
+  },
+  /* 革命历程 × 红色地图：一个节点同时驱动时间线、地图点位、关联区域与详情卡 */
+  journey: {
+    intro: '从星火初燃到迎接黎明，沿时间顺序点击历程节点或地图点位，对应点位、关联区域与阶段脉络同步高亮，历程线索清晰可读。',
+    eras: [
+      {era:'1921—1934', t:'星火初燃', d:'中国共产党成立后，革命思想在西北传播，甘肃建立早期党组织，红色火种扎根陇原。'},
+      {era:'1935', t:'长征北上', d:'党中央率红军长征经过甘肃，俄界会议、榜罗镇会议相继召开，北上方针坚定明确。'},
+      {era:'1936', t:'胜利会师', d:'三大主力红军会宁会师，伟大长征胜利结束，团结一致的力量在此汇聚。'},
+      {era:'1937—1949', t:'迎接黎明', d:'西路军将士浴血河西，兰州战役取得胜利、兰州解放，陇原大地迎来新曙光。'}
+    ],
+    zones: [
+      {id:'hexizoulang', name:'河西走廊', cx:190, cy:142, rx:132, ry:46, rotate:16},
+      {id:'longzhong', name:'陇中', cx:432, cy:232, rx:110, ry:62, rotate:0},
+      {id:'ganan', name:'甘南', cx:330, cy:288, rx:96, ry:46, rotate:0},
+      {id:'longdong', name:'陇东', cx:566, cy:222, rx:78, ry:56, rotate:0}
+    ],
+    nodes: [
+      {time:'1921年7月', era:'星火初燃', place:'上海 · 嘉兴南湖', title:'中国共产党成立',
+       desc:'中国共产党第一次全国代表大会召开，宣告中国共产党成立，中国革命的面貌从此焕然一新。',
+       note:'伟大建党精神是中国共产党的精神之源，也为后来包括陇原在内的革命斗争奠定了思想根基。本节点为全国性历史背景，不在甘肃示意图中标注。',
+       spirit:'伟大建党精神', pointId:'', zone:''},
+      {time:'1934年10月', era:'星火初燃', place:'江西于都等地', title:'中央红军开始长征',
+       desc:'红军主力实行战略转移，踏上举世瞩目的伟大长征，开启了震撼世界的英雄史诗。',
+       note:'长征铸就了伟大长征精神，其胜利结束的篇章最终在甘肃会宁写下。本节点为全国性历史背景，不在甘肃示意图中标注。',
+       spirit:'长征精神', pointId:'', zone:''},
+      {time:'1934年11月', era:'星火初燃', place:'甘肃华池南梁', title:'陕甘边区苏维埃政府成立',
+       desc:'陕甘边革命根据地以南梁为中心逐步形成，成为土地革命战争后期西北革命的重要支点。',
+       note:'南梁精神概括为「面向群众、坚守信念、顾全大局、求实开拓」，是陕甘边根据地留给后人的精神财富。',
+       spirit:'面向群众 · 求实开拓', pointId:'nanliang', zone:'longdong'},
+      {time:'1935年9月', era:'长征北上', place:'甘肃迭部俄界', title:'俄界会议',
+       desc:'中共中央在长征途中召开政治局会议，统一思想、坚定继续北上的战略方向。',
+       note:'会议坚持继续北上的方针，体现坚定方向、顾全大局的品格，是长征途中的重要一环。',
+       spirit:'坚定方向 · 顾全大局', pointId:'diebu', zone:'ganan'},
+      {time:'1935年9月', era:'长征北上', place:'甘肃通渭榜罗镇', title:'榜罗镇会议',
+       desc:'中央政治局常委会议正式决定把陕北作为红军长征的落脚点，为长征胜利指明方向。',
+       note:'把陕北确定为落脚点，体现实事求是、独立自主作出决策的清醒与坚定。',
+       spirit:'实事求是 · 坚定方向', pointId:'bangluo', zone:'longzhong'},
+      {time:'1936年10月', era:'胜利会师', place:'甘肃会宁', title:'三大主力红军会宁会师',
+       desc:'红一、红二、红四方面军在会宁地区胜利会师，宣告伟大长征胜利结束，中国革命转入新的阶段。',
+       note:'会师精神概括为「信念坚定、艰苦奋斗、团结一致、敢于胜利」，三军汇聚凝聚起团结的力量。',
+       spirit:'团结一致 · 敢于胜利', pointId:'huining', zone:'longzhong'},
+      {time:'1937年1月', era:'迎接黎明', place:'甘肃高台', title:'西路军血战高台',
+       desc:'中国工农红军西路军在河西走廊浴血奋战，高台一役中将士们宁死不屈、壮烈牺牲，用生命书写忠诚。',
+       note:'西路军将士的英雄气概，是「不怕牺牲、英勇斗争」的生动写照，英名永载史册。',
+       spirit:'不怕牺牲 · 忠贞不屈', pointId:'gaotai', zone:'hexizoulang'},
+      {time:'1949年8月', era:'迎接黎明', place:'甘肃兰州', title:'兰州战役与兰州解放',
+       desc:'人民解放军取得兰州战役胜利，兰州宣告解放，为解放大西北奠定坚实基础。',
+       note:'兰州解放为解放大西北打开局面，陇原大地由此翻开新的一页。',
+       spirit:'坚定信念 · 英勇奋斗', pointId:'lanzhou', zone:'longzhong'}
+    ]
+  }
+};
+
+(function(){
+  'use strict';
+  var d = redSiteData;
+  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  /* ---------- 工具 ---------- */
+  function el(tag, cls, text){
+    var n = document.createElement(tag);
+    if(cls) n.className = cls;
+    if(text !== undefined && text !== null) n.textContent = text;
+    return n;
+  }
+  function $(id){ return document.getElementById(id); }
+  function has(v){ return v !== undefined && v !== null && v !== ''; }
+  function hideSection(hash){
+    var sec = document.querySelector(hash);
+    if(sec) sec.hidden = true;
+    var links = document.querySelectorAll('a[href="' + hash + '"]');
+    for(var i=0;i<links.length;i++) links[i].hidden = true;
+  }
+  function need(hash, data){
+    var ok = Array.isArray(data) ? data.length > 0 : !!data;
+    if(!ok){ hideSection(hash); return false; }
+    return true;
+  }
+  function icon(kind){
+    var paths = {
+      star:'<path d="M12 2.4l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.3l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/>',
+      pin:'<path d="M12 2a7 7 0 00-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 00-7-7zm0 9.5A2.5 2.5 0 1112 6.5a2.5 2.5 0 010 5z"/>'
+    };
+    var s = document.createElement('span');
+    s.setAttribute('aria-hidden','true');
+    s.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:currentColor;vertical-align:-2px">' + (paths[kind] || paths.star) + '</svg>';
+    return s.firstChild;
+  }
+  function badge(text, red){
+    var b = el('span','badge' + (red ? ' red' : ''));
+    b.appendChild(icon('star'));
+    b.appendChild(document.createTextNode(text));
+    return b;
+  }
+
+  /* ---------- 站点文字与关键词 ---------- */
+  function renderSite(){
+    if(!d.site) return;
+    if(has(d.site.name)) $('brandName').textContent = d.site.name;
+    if(has(d.site.navSub)) $('brandSub').textContent = d.site.navSub;
+    if(has(d.site.contest)) $('heroTag').textContent = d.site.contest;
+    if(has(d.site.theme)) $('heroTheme').textContent = d.site.theme;
+    else $('heroTheme').hidden = true;
+    if(has(d.site.intro)) $('heroLead').textContent = d.site.intro;
+    else $('heroLead').hidden = true;
+
+    var kw = $('kwList');
+    var kws = Array.isArray(d.keywords) ? d.keywords : [];
+    for(var i=0;i<kws.length;i++){
+      if(has(kws[i])) kw.appendChild(badge(kws[i], false));
+    }
+    if(!kw.children.length) kw.hidden = true;
+
+    /* 红色基因图文板块：图与文案均由数据驱动，字段缺失时对应元素自动隐藏 */
+    var g = d.site.gene;
+    if(g){
+      var gi = $('geneImg');
+      if(has(g.image)) gi.src = g.image; else gi.hidden = true;
+      if(has(g.alt)) gi.alt = g.alt;
+      if(has(g.eyebrow)) $('geneEyebrow').textContent = g.eyebrow; else $('geneEyebrow').hidden = true;
+      if(has(g.title)) $('geneTitle').textContent = g.title; else $('geneTitle').hidden = true;
+      if(has(g.desc)) $('geneDesc').textContent = g.desc; else $('geneDesc').hidden = true;
+      if(has(g.sign)) $('geneSign').textContent = g.sign; else $('geneSign').hidden = true;
+    } else {
+      $('genePanel').hidden = true;
+    }
+  }
+
+  /* ---------- 红色足迹 ---------- */
+  function renderFootprints(){
+    if(!need('#footprints', d.footprints)) return;
+    var box = $('timeline');
+    var track = el('div','timeline-track');
+    for(var i=0;i<d.footprints.length;i++){
+      var f = d.footprints[i];
+      var item = el('div','tl-item reveal ' + (i % 2 === 0 ? 'left' : 'right'));
+      var dot = el('span','tl-dot'); dot.setAttribute('aria-hidden','true');
+      var card = el('article','card tl-card');
+      if(has(f.bg)){
+        card.className += ' has-bg';
+        card.style.backgroundImage = 'url("' + f.bg + '")';
+        card.appendChild(el('span','sr-only', (has(f.title) ? f.title : '红色足迹') + '历史配图'));
+      }
+      var meta = el('div','tl-meta');
+      if(has(f.time)) meta.appendChild(el('span','tl-time', f.time));
+      if(has(f.place)){
+        var pl = el('span','tl-place');
+        pl.appendChild(icon('pin'));
+        pl.appendChild(document.createTextNode(f.place));
+        meta.appendChild(pl);
+      }
+      card.appendChild(meta);
+      if(has(f.title)) card.appendChild(el('h3','', f.title));
+      if(has(f.desc)) card.appendChild(el('p','', f.desc));
+      if(has(f.scope)){
+        var foot = el('div','tl-foot');
+        foot.appendChild(badge(f.scope + '红色足迹', f.scope === '甘肃'));
+        card.appendChild(foot);
+      }
+      item.appendChild(dot);
+      item.appendChild(card);
+      track.appendChild(item);
+    }
+    box.appendChild(track);
+  }
+
+  /* ---------- 英雄人物 ---------- */
+  function renderHeroes(){
+    if(!need('#heroes', d.heroes)) return;
+    var box = $('people');
+    var track = el('div','people-track');
+    for(var i=0;i<d.heroes.length;i++){
+      var h = d.heroes[i];
+      var item = el('div','person-item reveal');
+      var dot = el('span','person-dot'); dot.setAttribute('aria-hidden','true');
+      var card = el('article','card person');
+      var art = el('div','person-art');
+      if(has(h.photo)){
+        art.className = 'person-art has-photo';
+        var img = document.createElement('img');
+        img.className = 'person-photo';
+        img.src = h.photo;
+        img.alt = (has(h.name) ? h.name : '英雄人物') + '历史照片';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        art.appendChild(img);
+      } else {
+        var star = document.createElementNS('http://www.w3.org/2000/svg','svg');
+        star.setAttribute('class','bg-star'); star.setAttribute('viewBox','0 0 24 24'); star.setAttribute('aria-hidden','true');
+        star.innerHTML = '<path d="M12 2.4l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.3l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z" fill="currentColor"/>';
+        art.appendChild(star);
+        if(has(h.glyph)) art.appendChild(el('span','glyph serif', h.glyph));
+      }
+      art.appendChild(el('span','mini','红色丰碑'));
+      var body = el('div','person-body');
+      if(has(h.name)) body.appendChild(el('h3','', h.name));
+      if(has(h.role)) body.appendChild(el('p','person-role', h.role));
+      if(has(h.desc)) body.appendChild(el('p','person-desc', h.desc));
+      if(Array.isArray(h.tags) && h.tags.length){
+        var tags = el('div','person-tags');
+        for(var j=0;j<h.tags.length;j++) if(has(h.tags[j])) tags.appendChild(badge(h.tags[j], true));
+        if(tags.children.length) body.appendChild(tags);
+      }
+      card.appendChild(art); card.appendChild(body);
+      item.appendChild(dot);
+      item.appendChild(card);
+      track.appendChild(item);
+    }
+    box.appendChild(track);
+  }
+
+  /* ---------- 精神谱系标签页（含无障碍语义与键盘切换） ---------- */
+  var tabButtons = [];
+  function renderSpirit(){
+    var tabs = (d.spirits && Array.isArray(d.spirits.tabs)) ? d.spirits.tabs.filter(function(t){
+      return t && Array.isArray(t.items) && t.items.length > 0;
+    }) : [];
+    if(!need('#spirit', tabs)) return;
+    var tablist = $('tabs'), panels = $('tabPanels');
+
+    for(var i=0;i<tabs.length;i++){
+      (function(t, idx){
+        var tabId = 'tab-' + idx, panelId = 'panel-' + idx;
+        var btn = el('button','tab', t.label);
+        btn.type = 'button';
+        btn.id = tabId;
+        btn.setAttribute('role','tab');
+        btn.setAttribute('aria-controls', panelId);
+        btn.setAttribute('aria-selected', idx === 0 ? 'true' : 'false');
+        btn.tabIndex = idx === 0 ? 0 : -1;
+        tablist.appendChild(btn);
+        tabButtons.push(btn);
+
+        var panel = el('div','tab-panel');
+        panel.id = panelId;
+        panel.setAttribute('role','tabpanel');
+        panel.setAttribute('aria-labelledby', tabId);
+        panel.tabIndex = 0;
+        if(idx !== 0) panel.hidden = true;
+        if(has(t.intro)) panel.appendChild(el('p','panel-intro', t.intro));
+        var grid = el('div', t.type === 'cards' ? 'spirit-cards' : 'stage-list');
+        for(var k=0;k<t.items.length;k++){
+          var it = t.items[k];
+          if(t.type === 'cards'){
+            var sc = el('article','sp-card');
+            if(has(it.t)) sc.appendChild(el('h4','', it.t));
+            if(has(it.core)) sc.appendChild(el('div','sp-core', it.core));
+            if(has(it.d)) sc.appendChild(el('p','', it.d));
+            grid.appendChild(sc);
+          } else {
+            var st = el('article','stage');
+            st.appendChild(el('div','stage-num', '0' + (k+1)));
+            if(has(it.era)) st.appendChild(el('span','stage-era', it.era));
+            if(has(it.t)) st.appendChild(el('h4','', it.t));
+            if(has(it.d)) st.appendChild(el('p','', it.d));
+            grid.appendChild(st);
+          }
+        }
+        panel.appendChild(grid);
+        panels.appendChild(panel);
+      })(tabs[i], i);
+    }
+
+    function activate(index, focus){
+      for(var i=0;i<tabButtons.length;i++){
+        var b = tabButtons[i], p = $('panel-' + i), on = i === index;
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+        b.tabIndex = on ? 0 : -1;
+        p.hidden = !on;
+        if(on){
+          p.classList.remove('panel-in');
+          void p.offsetWidth;
+          p.classList.add('panel-in');
+        }
+      }
+      if(focus) tabButtons[index].focus();
+    }
+    tablist.addEventListener('click', function(e){
+      var btn = e.target.closest ? e.target.closest('[role="tab"]') : null;
+      if(!btn) return;
+      var idx = tabButtons.indexOf(btn);
+      if(idx > -1) activate(idx, false);
+    });
+    tablist.addEventListener('keydown', function(e){
+      var cur = tabButtons.indexOf(document.activeElement);
+      if(cur < 0) return;
+      var next = -1;
+      if(e.key === 'ArrowRight' || e.keyCode === 39) next = (cur + 1) % tabButtons.length;
+      else if(e.key === 'ArrowLeft' || e.keyCode === 37) next = (cur - 1 + tabButtons.length) % tabButtons.length;
+      else if(e.key === 'Home' || e.keyCode === 36) next = 0;
+      else if(e.key === 'End' || e.keyCode === 35) next = tabButtons.length - 1;
+      if(next > -1){ e.preventDefault(); activate(next, true); }
+    });
+  }
+
+  /* ---------- 革命历程 × 红色地图（单点驱动的双向联动） ---------- */
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  var journeyState = { index:-1, tabs:[], eraButtons:[], nodes:[], points:[], zones:[], eras:[] };
+  function renderJourney(){
+    var cfg = d.journey || {};
+    var nodes = Array.isArray(cfg.nodes) ? cfg.nodes : [];
+    var pts = (d.map && Array.isArray(d.map.points)) ? d.map.points : [];
+    var zones = Array.isArray(cfg.zones) ? cfg.zones : [];
+    var eras = Array.isArray(cfg.eras) ? cfg.eras : [];
+    if(!need('#map', nodes) || !need('#map', pts)) return;
+    journeyState.nodes = nodes; journeyState.points = pts;
+    journeyState.zones = zones; journeyState.eras = eras;
+
+    function sv(tag, attrs){
+      var n = document.createElementNS(SVGNS, tag);
+      for(var k in attrs) if(attrs.hasOwnProperty(k)) n.setAttribute(k, attrs[k]);
+      return n;
+    }
+    function pad(n){ return n < 10 ? '0' + n : '' + n; }
+    function short(s, n){ return s && s.length > n ? s.slice(0, n) + '…' : (s || ''); }
+    function pointIndex(id){
+      for(var i=0;i<nodes.length;i++) if(nodes[i].pointId === id) return i;
+      return -1;
+    }
+    function eraInfo(name){
+      for(var i=0;i<eras.length;i++) if(eras[i].t === name) return eras[i];
+      return null;
+    }
+
+    /* 导语与四个历程阶段入口 */
+    var intro = $('journeyIntro');
+    if(has(cfg.intro)) intro.textContent = cfg.intro; else intro.hidden = true;
+    var eraBox = $('journeyEras');
+    for(var e=0;e<eras.length;e++){
+      (function(er){
+        if(!has(er.t)) return;
+        var b = el('button','j-era');
+        b.type = 'button';
+        b.setAttribute('data-era', er.t);
+        if(has(er.era)) b.title = er.era + (has(er.d) ? ' · ' + er.d : '');
+        b.appendChild(el('b','', pad(e+1)));
+        b.appendChild(document.createTextNode(er.t));
+        b.addEventListener('click', function(){
+          for(var i=0;i<nodes.length;i++) if(nodes[i].era === er.t){ selectJourney(i, false); break; }
+        });
+        eraBox.appendChild(b);
+        journeyState.eraButtons.push(b);
+      })(eras[e]);
+    }
+    if(!eraBox.children.length) eraBox.hidden = true;
+
+    /* 历程时间线：tablist / tab 语义，支持左右方向键与 Home、End */
+    var track = $('journeyTrack'), bar = $('journeyBar');
+    for(var i=0;i<nodes.length;i++){
+      (function(nd, idx){
+        var btn = el('button','j-node');
+        btn.type = 'button';
+        btn.id = 'jtab-' + idx;
+        btn.setAttribute('role','tab');
+        btn.setAttribute('aria-controls','journeyEraNote');
+        btn.setAttribute('aria-selected','false');
+        btn.tabIndex = -1;
+        btn.setAttribute('aria-label', '第' + pad(idx+1) + '站，' + (nd.time || '') + '，' + (nd.title || ''));
+        var dot = el('span','j-dot'); dot.setAttribute('aria-hidden','true');
+        var card = el('span','j-card');
+        card.appendChild(el('span','j-order', '第 ' + pad(idx+1) + ' 站'));
+        if(has(nd.time)) card.appendChild(el('span','j-time', nd.time));
+        if(has(nd.title)) card.appendChild(el('span','j-title', nd.title));
+        if(has(nd.era)) card.appendChild(el('span','j-era-tag', nd.era));
+        btn.appendChild(dot); btn.appendChild(card);
+        btn.addEventListener('click', function(){ selectJourney(idx, false); });
+        track.appendChild(btn);
+        journeyState.tabs.push(btn);
+      })(nodes[i], i);
+    }
+    track.addEventListener('keydown', function(e){
+      var cur = journeyState.index, next = -1;
+      if(e.key === 'ArrowRight' || e.keyCode === 39) next = (cur + 1) % nodes.length;
+      else if(e.key === 'ArrowLeft' || e.keyCode === 37) next = (cur - 1 + nodes.length) % nodes.length;
+      else if(e.key === 'Home' || e.keyCode === 36) next = 0;
+      else if(e.key === 'End' || e.keyCode === 35) next = nodes.length - 1;
+      if(next > -1){ e.preventDefault(); selectJourney(next, true); }
+    });
+
+    /* 地图：按省内轮廓裁剪的关联区域 */
+    var svg = $('mapSvg');
+    var defs = svg.querySelector('defs');
+    var clip = sv('clipPath', {id:'provinceClip'});
+    clip.appendChild(sv('path', {d:svg.querySelector('.province').getAttribute('d')}));
+    defs.appendChild(clip);
+    var zg = $('mapZones');
+    zg.setAttribute('clip-path','url(#provinceClip)');
+    for(var z=0;z<zones.length;z++){
+      var zo = zones[z];
+      var shape = sv('ellipse', {class:'map-zone','data-zone':zo.id, cx:zo.cx, cy:zo.cy, rx:zo.rx, ry:zo.ry});
+      if(zo.rotate) shape.setAttribute('transform','rotate(' + zo.rotate + ' ' + zo.cx + ' ' + zo.cy + ')');
+      zg.appendChild(shape);
+    }
+
+    /* 地图：点位编号与历程节点一一对应，点击反向选中节点 */
+    var g = $('mapPoints');
+    for(var p=0;p<pts.length;p++){
+      (function(pt){
+        var order = pointIndex(pt.id);
+        var grp = sv('g', {class:'map-point', 'data-id':pt.id, role:'button', tabindex:'0', 'aria-pressed':'false'});
+        grp.setAttribute('aria-label', (pt.name || '点位') + (order > -1 ? '，历程第' + pad(order+1) + '站' : '') + '：查看简介');
+        grp.appendChild(sv('circle', {class:'halo', cx:pt.x, cy:pt.y, r:24}));
+        grp.appendChild(sv('circle', {class:'pulse', cx:pt.x, cy:pt.y, r:18}));
+        grp.appendChild(sv('circle', {class:'dot', cx:pt.x, cy:pt.y, r:9}));
+        grp.appendChild(sv('circle', {class:'core', cx:pt.x, cy:pt.y, r:3}));
+        var dy = pt.labelDy || 28;
+        var label = sv('text', {class:'p-label', x:pt.x, y:pt.y + dy, 'text-anchor':'middle'});
+        label.textContent = pt.name || '';
+        grp.appendChild(label);
+        if(order > -1){
+          /* 序号角标紧贴圆点右侧，与地名标签在垂直方向错开，避免标注重叠 */
+          var ord = sv('text', {class:'p-order', x:pt.x + 16, y:pt.y + 4, 'text-anchor':'start'});
+          ord.textContent = pad(order+1);
+          grp.appendChild(ord);
+        }
+        function pick(){ if(order > -1) selectJourney(order, false); }
+        grp.addEventListener('click', pick);
+        grp.addEventListener('keydown', function(ev){
+          if(ev.key === 'Enter' || ev.key === ' ' || ev.keyCode === 13 || ev.keyCode === 32){ ev.preventDefault(); pick(); }
+        });
+        g.appendChild(grp);
+      })(pts[p]);
+    }
+
+    /* 全国性节点共用一枚角标，点击在其间切换 */
+    var nat = $('nationalMark'), natText = $('nationalText');
+    function pickNational(){
+      var arr = [];
+      for(var i=0;i<nodes.length;i++) if(!nodes[i].pointId) arr.push(i);
+      if(!arr.length) return;
+      var pos = arr.indexOf(journeyState.index);
+      selectJourney(arr[(pos + 1) % arr.length], false);
+    }
+    nat.addEventListener('click', pickNational);
+    nat.addEventListener('keydown', function(ev){
+      if(ev.key === 'Enter' || ev.key === ' ' || ev.keyCode === 13 || ev.keyCode === 32){ ev.preventDefault(); pickNational(); }
+    });
+
+    /* 唯一联动入口：节点、阶段、点位、区域、角标、详情一次更新，保证四者一致 */
+    function selectJourney(index, focus){
+      var nd = nodes[index];
+      if(!nd) return;
+      journeyState.index = index;
+      var i, on;
+      for(i=0;i<journeyState.tabs.length;i++){
+        on = i === index;
+        journeyState.tabs[i].setAttribute('aria-selected', on ? 'true' : 'false');
+        journeyState.tabs[i].tabIndex = on ? 0 : -1;
+      }
+      for(i=0;i<journeyState.eraButtons.length;i++){
+        var eb = journeyState.eraButtons[i];
+        if(eb.getAttribute('data-era') === nd.era) eb.classList.add('active');
+        else eb.classList.remove('active');
+      }
+      var ei = eraInfo(nd.era), eraNote = $('journeyEraNote');
+      eraNote.setAttribute('aria-labelledby', 'jtab-' + index);
+      if(ei && (has(ei.d) || has(ei.era))){
+        eraNote.hidden = false;
+        eraNote.textContent = '阶段脉络 · ' + (ei.t || '') + (has(ei.era) ? '（' + ei.era + '）' : '') + (has(ei.d) ? '：' + ei.d : '');
+      } else eraNote.hidden = true;
+      var t = journeyState.tabs[index], tr = t.getBoundingClientRect(), br = bar.getBoundingClientRect();
+      if(tr.left < br.left + 10) bar.scrollLeft -= (br.left + 10 - tr.left);
+      else if(tr.right > br.right - 10) bar.scrollLeft += (tr.right - (br.right - 10));
+      var pc = g.childNodes;
+      for(i=0;i<pc.length;i++){
+        if(!pc[i].getAttribute) continue;
+        on = !!nd.pointId && pc[i].getAttribute('data-id') === nd.pointId;
+        pc[i].setAttribute('class', on ? 'map-point active' : 'map-point');
+        pc[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+      }
+      var zc = zg.childNodes;
+      for(i=0;i<zc.length;i++){
+        if(!zc[i].getAttribute) continue;
+        on = !!nd.zone && zc[i].getAttribute('data-zone') === nd.zone;
+        zc[i].setAttribute('class', on ? 'map-zone active' : 'map-zone');
+      }
+      var isNational = !nd.pointId;
+      nat.setAttribute('class', isNational ? 'national-mark active' : 'national-mark');
+      nat.setAttribute('aria-pressed', isNational ? 'true' : 'false');
+      natText.textContent = isNational ? ('全国背景 · 第' + pad(index+1) + '站 ' + short(nd.title, 8)) : '全国历程背景';
+      if(focus) journeyState.tabs[index].focus();
+    }
+    selectJourney(0, false);
+  }
+
+  /* ---------- 锚点精确滚动、导航高亮、返回顶部、进入淡入 ---------- */
+  function navHeight(){ var n = $('topbar'); return n ? n.offsetHeight : 72; }
+  function goTo(hash){
+    var t = document.querySelector(hash);
+    if(!t) return;
+    var y = t.getBoundingClientRect().top + window.pageYOffset - navHeight() - 14;
+    if(y < 0) y = 0;
+    if(window.history && window.history.replaceState) window.history.replaceState(null, '', hash);
+    if(reduce) window.scrollTo(0, y);
+    else window.scrollTo({top:y, behavior:'smooth'});
+  }
+  function initAnchors(){
+    document.addEventListener('click', function(e){
+      var a = e.target && e.target.closest ? e.target.closest('a[href^="#"]') : null;
+      if(!a) return;
+      var href = a.getAttribute('href');
+      if(!href || href === '#') return;
+      var target = document.querySelector(href);
+      if(!target) return;
+      e.preventDefault();
+      goTo(href);
+    });
+  }
+  function initScroll(){
+    var back = $('backtop');
+    var links = document.querySelectorAll('#navLinks a');
+    var secs = [];
+    for(var i=0;i<links.length;i++){
+      var s = document.querySelector(links[i].getAttribute('href'));
+      if(s && !s.hidden) secs.push({section:s, link:links[i]});
+    }
+    var ticking = false;
+    function update(){
+      var y = window.pageYOffset || document.documentElement.scrollTop;
+      if(y > 320) back.classList.add('show'); else back.classList.remove('show');
+      var current = -1;
+      var limit = navHeight() + 90;
+      for(var j=0;j<secs.length;j++){
+        if(secs[j].section.getBoundingClientRect().top <= limit) current = j;
+      }
+      for(var k=0;k<links.length;k++) links[k].classList.remove('active');
+      if(current > -1) secs[current].link.classList.add('active');
+      ticking = false;
+    }
+    window.addEventListener('scroll', function(){
+      if(!ticking){ ticking = true; window.requestAnimationFrame(update); }
+    }, {passive:true});
+    window.addEventListener('resize', update);
+    update();
+  }
+  function initReveal(){
+    var nodes = document.querySelectorAll('.reveal');
+    if(reduce || !('IntersectionObserver' in window)){
+      for(var i=0;i<nodes.length;i++) nodes[i].classList.add('in');
+      return;
+    }
+    var io = new IntersectionObserver(function(entries){
+      for(var i=0;i<entries.length;i++){
+        if(entries[i].isIntersecting){
+          entries[i].target.classList.add('in');
+          io.unobserve(entries[i].target);
+        }
+      }
+    }, {threshold:.1, rootMargin:'0px 0px -6% 0px'});
+    for(var j=0;j<nodes.length;j++) io.observe(nodes[j]);
+  }
+
+  /* ---------- 开屏：本地无声短片播放一次 → 淡出 → 主页淡入 ----------
+     素材规格：1280×720 / 16:9 / 24fps / 约 10.04 秒 / MP4(H.264 avc1, yuv420p) / 约 1.45 MB / 无音轨
+     播放逻辑：muted + autoplay + playsinline（静音是浏览器允许自动播放的前提）；
+               不循环、播放一次；ended 后自动淡出；解码失败或 3 秒未就绪自动跳过；
+               「跳过开屏」按钮、点击画面、Esc/Enter/空格均可提前跳过；
+               系统偏好「减少动效」时完全跳过开屏。
+     适配场景：桌面与手机横竖屏、Edge 90+ / Chromium 内核、本地 file:// 离线打开、校内机房与评审环境。 */
+  function initIntro(){
+    var intro = document.getElementById('intro');
+    if(!intro) return;
+    var v = document.getElementById('introVideo');
+    function stopVideo(){
+      if(!v) return;
+      try{ v.pause(); }catch(e){}
+    }
+    if(reduce){
+      stopVideo();
+      if(v) v.removeAttribute('autoplay');
+      if(intro.parentNode) intro.parentNode.removeChild(intro);
+      return;
+    }
+    var done = false, timer = 0;
+    function close(){
+      if(done) return;
+      done = true;
+      window.clearTimeout(timer);
+      stopVideo();
+      intro.className = 'intro is-out';
+      document.body.classList.remove('intro-on');
+      window.setTimeout(function(){
+        if(intro.parentNode) intro.parentNode.removeChild(intro);
+      }, 700);
+    }
+    /* 兜底：元数据迟迟不到（解码失败、文件缺失）时，最多等 3 秒即进入主页 */
+    timer = window.setTimeout(close, 3000);
+    document.body.classList.add('intro-on');
+    if(v){
+      v.muted = true;                        /* 属性 + 脚本双保险，全程静音 */
+      v.loop = false;                       /* 只播放一次，不循环 */
+      function armByDuration(){
+        var d = (isFinite(v.duration) && v.duration > 0) ? v.duration : 10;
+        window.clearTimeout(timer);
+        timer = window.setTimeout(close, (d + 1.2) * 1000);   /* 看门狗：按实际时长 + 余量 */
+      }
+      v.addEventListener('loadedmetadata', armByDuration);
+      if(v.readyState >= 1) armByDuration();
+      v.addEventListener('playing', function(){ v.className = 'intro-video ready'; });
+      v.addEventListener('ended', close);   /* 播完自动淡出进入主页 */
+      v.addEventListener('error', close);   /* 解码失败直接跳过，不卡在开屏 */
+      try{
+        var p = v.play();
+        if(p && p.catch) p.catch(function(){});
+      }catch(e){}
+    }
+    var skip = document.getElementById('introSkip');
+    if(skip) skip.addEventListener('click', close);
+    intro.addEventListener('click', close);
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' || e.key === 'Enter' || e.key === ' ' ||
+         e.keyCode === 27 || e.keyCode === 13 || e.keyCode === 32) close();
+    });
+  }
+
+  /* ---------- 初始化 ---------- */
+  renderSite();
+  renderFootprints();
+  renderHeroes();
+  renderSpirit();
+  renderJourney();
+  initAnchors();
+  initScroll();
+  initReveal();
+  initIntro();
+})();
+</script>
+</body>
+</html>
